@@ -8,10 +8,11 @@ size_t getline(char **lineptr, size_t *n, FILE *stream)
   size_t pos = 0;
   int c;
 
-  if (lineptr == NULL || stream == NULL || n == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
+  if (lineptr == NULL || stream == NULL || n == NULL)
+  {
+    errno = EINVAL;
+    return -1;
+  }
 
   c = getc(stream);
   if (c == EOF)
@@ -20,8 +21,8 @@ size_t getline(char **lineptr, size_t *n, FILE *stream)
   }
   if (*lineptr == NULL)
   {
-    *lineptr  = (char *)malloc(128);
-    if (*lineptr  == NULL)
+    *lineptr = (char *)malloc(128);
+    if (*lineptr == NULL)
     {
       return -1;
     }
@@ -33,7 +34,7 @@ size_t getline(char **lineptr, size_t *n, FILE *stream)
     if ((pos + 1) > *n)
     {
       size_t new_size = *n + (*n >> 2);
-      if(new_size < 128)
+      if (new_size < 128)
       {
         new_size = 128;
       }
