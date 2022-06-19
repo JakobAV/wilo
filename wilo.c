@@ -41,6 +41,7 @@ enum editorHighlight
   HL_NORMAL = 0,
   HL_COMMENT,
   HL_MLCOMMENT,
+  HL_FUNCTION,
   HL_KEYWORD1,
   HL_KEYWORD2,
   HL_STRING,
@@ -50,6 +51,7 @@ enum editorHighlight
 
 #define HL_HIGHLIGHT_NUMBERS (1 << 0)
 #define HL_HIGHLIGHT_STRINGS (1 << 1)
+#define HL_HIGHLIGHT_FUNCTIONS (1 << 2)
 
 /*** data ***/
 
@@ -103,7 +105,7 @@ struct editorConfig E;
 char *C_HL_extensions[] = {".c", ".h", ".cpp", NULL};
 char *C_HL_keywords[] = {
     "switch", "if", "while", "for", "break", "continue", "return", "else",
-    "struct", "union", "typedef", "static", "enum", "class", "case",
+    "struct", "union", "typedef", "static", "enum", "class", "case", "default",
     "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
     "void|", NULL};
 
@@ -115,7 +117,7 @@ editorSyntax HLDB[] = {
         "//",
         "/*",
         "*/",
-        HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS,
+        HL_HIGHLIGHT_NUMBERS | HL_HIGHLIGHT_STRINGS | HL_HIGHLIGHT_FUNCTIONS,
     },
 };
 
@@ -448,7 +450,7 @@ int getWindowSize(int *rows, int *cols)
 
 int is_seperator(int c)
 {
-  return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
+  return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];:", c) != NULL;
 }
 
 void editorUpdateSyntax(erow *row)
@@ -579,6 +581,20 @@ void editorUpdateSyntax(erow *row)
       }
     }
 
+    if (E.syntax->flags & HL_HIGHLIGHT_FUNCTIONS)
+    {
+      if (row->render[i] == '(')
+      {
+        for (int j = i - 1; j >= 0; j--)
+        {
+          int c = row->render[j];
+          if (isspace(c) || c == '\0' || strchr("!(", c) != NULL)
+            break;
+          row->hl[j] = HL_FUNCTION;
+        }
+      }
+    }
+
     prev_sep = is_seperator(c);
     i++;
   }
@@ -598,6 +614,7 @@ int editorSyntaxToColor(int hl)
     return 36;
   case HL_STRING:
     return 35;
+  case HL_FUNCTION:
   case HL_KEYWORD1:
     return 33;
   case HL_KEYWORD2:
